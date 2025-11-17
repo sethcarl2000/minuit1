@@ -80,6 +80,20 @@ double calcNLL(TH1F* h, TF1* f){
   return 2*nll;   // factor of 2 so the 1 sigma error contours follow the chi^2 convention
 }
 
+double calcChi2(TH1F* h, TF1* f){
+  
+  double chi2=0.; 
+  auto ax = h->GetXaxis(); 
+  for (int b=1; b<=ax->GetNbins(); b++) {
+    double observed = h->GetBinContent(b); 
+    if (observed < 1.) continue; 
+    double expected = f->Eval(ax->GetBinCenter(b)); 
+    double arg = (expected - observed)/observed; 
+    chi2 += arg * arg; 
+  }
+  return chi2; 
+}
+
 
 //-------------------------------------------------------------------------
 // Minuit fcn: calculates value of the function to be minimized using
@@ -98,8 +112,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
     fparam->SetParameter(i,par[i]);
   }
 
-  f = calcNLL(hdata,fparam);
- 
+  f = calcChi2(hdata,fparam);
 }
 
 //-------------------------------------------------------------------------
